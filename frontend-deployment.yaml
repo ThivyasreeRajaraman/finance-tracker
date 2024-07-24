@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      dnsPolicy: ClusterFirst
+      containers:
+      - name: frontend
+        # image: thivyasree/finance-tracker-repository:finance-tracker-frontend_v1.0.0
+        image: us-west1-docker.pkg.dev/finance-tracker-427512/frontend-repo/finance-tracker-frontend:v1.0.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+        env:
+        - name: REACT_APP_GOOGLE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: google-credentials
+              key: client-id
+        - name: REACT_APP_BACKEND_URL
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: REACT_APP_BACKEND_URL
+      # imagePullSecrets:  
+      # - name: dockerhub-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+spec:
+  type: ClusterIP
+  selector:
+    app: frontend
+  ports:
+  - port: 3000
+    targetPort: 3000

@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      dnsPolicy: ClusterFirst
+      containers:
+      - name: backend
+        # image: thivyasree/finance-tracker-repository:finance-tracker-backend_v1.0.0
+        image: us-west1-docker.pkg.dev/finance-tracker-427512/backend-repo/finance-tracker-backend:v1.0.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: database-url
+        - name: DB_HOST
+          # value: postgres.default.svc.cluster.local
+          value: "34.83.177.47"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: password
+        - name: DB_NAME
+          value: finance_tracker
+        - name: GOOGLE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: google-credentials
+              key: client-id
+        - name: GOOGLE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: google-credentials
+              key: client-secret
+        - name: GOOGLE_REDIRECT_URL
+          value: "http://finance-tracker.com"
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: backend-secret
+              key: secret-key
+        - name: GOOGLE_USER_INFO_ENDPOINT
+          value: "https://www.googleapis.com/oauth2/v2/userinfo"
+        - name: TEST_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: test-database-url
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: backend-secret
+              key: api-key
+
+      # imagePullSecrets:  
+      #   - name: dockerhub-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: backend
+  ports:
+  - port: 8080
+    targetPort: 8080

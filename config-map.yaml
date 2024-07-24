@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+data:
+  GOOGLE_USER_INFO_ENDPOINT: "https://www.googleapis.com/oauth2/v2/userinfo"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+data:
+  REACT_APP_BACKEND_URL: "http://finance-tracker.com/"
